@@ -1,27 +1,53 @@
 [
   {
     "date": "2026-04-26",
-    "resumo": [],
-    "atencao": [
+    "resumo": [
       "Dados incompletos"
     ],
-    "recomendacoes": [
-      "Forneça mais detalhes para análise"
+    "atencao": [
+      "A falta de dados torna a análise impossível"
     ],
-    "tokens_used": 262,
-    "run_at": "2026-04-26T16:34:39.206Z"
+    "recomendacoes": [
+      "Forneça mais informações para uma análise adequada"
+    ],
+    "tokens_used": 275,
+    "run_at": "2026-04-26T17:07:39.623Z"
   },
   {
     "date": "2026-04-26",
     "resumo": [],
     "atencao": [
-      "Dados incompletos"
+      "Os dados fornecidos estão incompletos e não contêm informações valiosas para análise."
     ],
     "recomendacoes": [
-      "Forneça mais informações para análise"
+      "Forneça detalhes adicionais para que eu possa realizar uma análise adequada."
     ],
-    "tokens_used": 261,
-    "run_at": "2026-04-26T16:33:38.861Z"
+    "tokens_used": 288,
+    "run_at": "2026-04-26T17:06:40.031Z"
+  },
+  {
+    "date": "2026-04-26",
+    "resumo": [],
+    "atencao": [
+      "Dados insuficientes para análise"
+    ],
+    "recomendacoes": [
+      "Forneça mais dados para uma análise precisa"
+    ],
+    "tokens_used": 266,
+    "run_at": "2026-04-26T17:05:39.172Z"
+  },
+  {
+    "date": "2026-04-26",
+    "resumo": [],
+    "atencao": [
+      "Não foram fornecidos dados para análise."
+    ],
+    "recomendacoes": [
+      "Forneça os dados que você gostaria de analisar."
+    ],
+    "tokens_used": 273,
+    "run_at": "2026-04-26T17:04:39.310Z"
   },
   {
     "date": "2026-04-26",
@@ -33,7 +59,7 @@
       "Forneça mais detalhes ou dados completos para que eu possa realizar uma análise adequada."
     ],
     "tokens_used": 291,
-    "run_at": "2026-04-26T16:32:40.232Z"
+    "run_at": "2026-04-26T17:03:41.696Z"
   },
   {
     "date": "2026-04-26",
@@ -45,19 +71,7 @@
       "Forneça mais informações para análise"
     ],
     "tokens_used": 261,
-    "run_at": "2026-04-26T16:31:38.760Z"
-  },
-  {
-    "date": "2026-04-26",
-    "resumo": [],
-    "atencao": [
-      "Os dados fornecidos estão incompletos e não contêm informações valiosas para análise."
-    ],
-    "recomendacoes": [
-      "Forneça mais detalhes ou dados completos para que eu possa realizar uma análise adequada."
-    ],
-    "tokens_used": 291,
-    "run_at": "2026-04-26T16:30:40.606Z"
+    "run_at": "2026-04-26T17:02:39.816Z"
   },
   {
     "date": "2026-04-26",
@@ -69,18 +83,6 @@
       "Forneça mais informações para análise"
     ],
     "tokens_used": 261,
-    "run_at": "2026-04-26T16:29:39.886Z"
-  },
-  {
-    "date": "2026-04-26",
-    "resumo": [],
-    "atencao": [
-      "Dados incompletos"
-    ],
-    "recomendacoes": [
-      "Forneça mais informações para análise"
-    ],
-    "tokens_used": 257,
-    "run_at": "2026-04-26T16:28:38.714Z"
+    "run_at": "2026-04-26T17:01:38.765Z"
   }
 ]

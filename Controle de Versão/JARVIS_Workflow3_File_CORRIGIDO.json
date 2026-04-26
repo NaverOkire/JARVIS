@@ -1,0 +1,174 @@
+{
+  "name": "JARVIS — Workflow 3 (Discord File)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "jarvis-file",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-656, 160],
+      "id": "befd5e31-74be-483a-8c05-59d3a4e777bb",
+      "name": "Webhook File",
+      "webhookId": "jarvis-file"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body ?? $input.first().json;\n\nconst tiposSuportados = ['csv', 'json', 'txt', 'md', 'pdf', 'docx', 'odt'];\nconst ext = (body.ext ?? '').toLowerCase();\n\nif (!body.url_arquivo || !ext) return [];\n\nif (!tiposSuportados.includes(ext)) {\n  return [{\n    json: {\n      erro: true,\n      resposta: `**JARVIS:** Formato \\`.${ext}\\` não suportado. Aceitos: ${tiposSuportados.join(', ')}`,\n      channel_id: body.channel_id\n    }\n  }];\n}\n\nreturn [{\n  json: {\n    erro: false,\n    channel_id: body.channel_id ?? '',\n    url_arquivo: body.url_arquivo,\n    filename: body.filename ?? 'arquivo',\n    ext,\n    autor: body.autor ?? 'usuário',\n    instrucao: body.instrucao || 'Analise este arquivo e me dê um resumo estruturado.'\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-448, 160],
+      "id": "dffd033f-1eb3-4f18-bcd2-dbda1d2e8776",
+      "name": "js valida arquivo"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.erro }}",
+              "rightValue": true,
+              "operator": { "type": "boolean", "operation": "equals" }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.1,
+      "position": [-224, 160],
+      "id": "4ce17a19-b25e-4084-b59f-083728788374",
+      "name": "tem erro?"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ resposta: $json.resposta }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [0, 0],
+      "id": "9e80a36e-5611-437e-a80c-3340c253d058",
+      "name": "Responde Erro Tipo"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url_arquivo }}",
+        "options": {
+          "response": {
+            "response": { "responseFormat": "file" }
+          },
+          "timeout": 30000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [0, 320],
+      "id": "3a2afdfb-c558-492e-9c90-f8eb327774f5",
+      "name": "Baixa Arquivo"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first();\nconst validado = $('js valida arquivo').first().json;\nconst ext = validado.ext;\n\nconst binaryKey = Object.keys(item.binary ?? {})[0];\nif (!binaryKey) throw new Error('Arquivo binário não encontrado');\n\nconst buffer = Buffer.from(item.binary[binaryKey].data, 'base64');\n\nlet texto = '';\n\nif (['txt', 'md'].includes(ext)) {\n  texto = buffer.toString('utf-8');\n\n} else if (ext === 'csv') {\n  const linhas = buffer.toString('utf-8').split('\\n');\n  texto = linhas.slice(0, 100).join('\\n');\n  if (linhas.length > 100) texto += `\\n...(${linhas.length - 100} linhas omitidas)`;\n\n} else if (ext === 'json') {\n  try {\n    const parsed = JSON.parse(buffer.toString('utf-8'));\n    texto = JSON.stringify(parsed, null, 2);\n  } catch(e) {\n    texto = buffer.toString('utf-8');\n  }\n\n} else if (ext === 'docx') {\n  const mammoth = require('mammoth');\n  const result = await mammoth.extractRawText({ buffer });\n  texto = result.value;\n\n} else if (ext === 'pdf') {\n  const pdfParse = require('pdf-parse');\n  const result = await pdfParse(buffer);\n  texto = result.text;\n\n} else if (ext === 'odt') {\n  const AdmZip = require('adm-zip');\n  const zip = new AdmZip(buffer);\n  const xml = zip.readAsText('content.xml');\n  texto = xml.replace(/<[^>]+>/g, ' ').replace(/\\s+/g, ' ').trim();\n\n} else {\n  texto = '(formato não suportado para extração)';\n}\n\nif (texto.length > 4000) texto = texto.substring(0, 4000) + '\\n...(truncado)';\n\n// Recupera metadados do node de validação para não perder channel_id etc\nreturn [{\n  json: {\n    channel_id: validado.channel_id,\n    filename: validado.filename,\n    ext,\n    autor: validado.autor,\n    instrucao: validado.instrucao,\n    texto\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [224, 320],
+      "id": "ec34d5e2-f70d-4cae-a199-f95a31d7343b",
+      "name": "js extrai texto"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:1234/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"qwen2.5-coder-7b-instruct\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Você é o JARVIS. Analise o conteúdo do arquivo enviado e responda de forma estruturada em português. Seja objetivo e direto.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify(\"Arquivo: \" + $json.filename + \"\\nInstrução: \" + $json.instrucao + \"\\n\\nConteúdo:\\n\" + $json.texto) }}\n    }\n  ],\n  \"temperature\": 0.3,\n  \"max_tokens\": 1000,\n  \"stream\": false\n}",
+        "options": { "timeout": 120000 }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [448, 320],
+      "id": "0745692b-afed-4138-827b-b5bf7f6b0777",
+      "name": "LM Studio Arquivo"
+    },
+    {
+      "parameters": {
+        "jsCode": "const fs = require('fs');\nconst lmResponse = $input.first().json;\nconst ctx = $('js extrai texto').first().json;\n\nconst resposta = lmResponse?.choices?.[0]?.message?.content ?? 'Não consegui analisar o arquivo.';\nconst filename = ctx.filename;\nconst channel_id = ctx.channel_id;\n\nconst arquivosPath = 'D:\\\\projetos\\\\Rep\\\\JARVIS\\\\JARVIS_BRAIN\\\\memoria\\\\arquivos_processados.json';\nconst dir = 'D:\\\\projetos\\\\Rep\\\\JARVIS\\\\JARVIS_BRAIN\\\\memoria';\n\nif (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });\n\nlet historico = [];\ntry {\n  historico = JSON.parse(fs.readFileSync(arquivosPath, 'utf-8'));\n  if (!Array.isArray(historico)) historico = [];\n} catch(e) { historico = []; }\n\nhistorico.unshift({\n  date: new Date().toISOString().split('T')[0],\n  filename,\n  analise: resposta,\n  run_at: new Date().toISOString()\n});\n\nif (historico.length > 30) historico = historico.slice(0, 30);\nfs.writeFileSync(arquivosPath, JSON.stringify(historico, null, 2), 'utf-8');\n\nconst msg = `**JARVIS — Análise de \\`${filename}\\`:**\\n\\n${resposta}`;\n\nreturn [{ json: { channel_id, resposta: msg } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [672, 320],
+      "id": "a83267a0-bd0a-49df-89bb-aed2848490a9",
+      "name": "js salva e formata"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ resposta: $json.resposta }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [880, 320],
+      "id": "816c7c71-cbb1-4a1c-a949-5b085a833e81",
+      "name": "Responde Análise"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook File": {
+      "main": [[{ "node": "js valida arquivo", "type": "main", "index": 0 }]]
+    },
+    "js valida arquivo": {
+      "main": [[{ "node": "tem erro?", "type": "main", "index": 0 }]]
+    },
+    "tem erro?": {
+      "main": [
+        [{ "node": "Responde Erro Tipo", "type": "main", "index": 0 }],
+        [{ "node": "Baixa Arquivo", "type": "main", "index": 0 }]
+      ]
+    },
+    "Baixa Arquivo": {
+      "main": [[{ "node": "js extrai texto", "type": "main", "index": 0 }]]
+    },
+    "js extrai texto": {
+      "main": [[{ "node": "LM Studio Arquivo", "type": "main", "index": 0 }]]
+    },
+    "LM Studio Arquivo": {
+      "main": [[{ "node": "js salva e formata", "type": "main", "index": 0 }]]
+    },
+    "js salva e formata": {
+      "main": [[{ "node": "Responde Análise", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "1e2be5b1-6dcb-49fd-9537-3625379ffcdc",
+  "meta": {
+    "instanceId": "8e5aeb01f325f2649965b01f71bf0b166cebd1b92418275ae5a39999e5d13610"
+  },
+  "id": "I5Ccn6ew46fGKJ8J",
+  "tags": []
+}

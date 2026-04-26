@@ -1,0 +1,111 @@
+{
+  "name": "JARVIS — Workflow 2 (Discord Chat)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "jarvis-chat",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [224, 384],
+      "id": "a5d74a0f-1776-4f91-b515-cf87de2cedcf",
+      "name": "Webhook Chat",
+      "webhookId": "jarvis-chat"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body ?? $input.first().json;\n\nconst pergunta = body.pergunta ?? '';\nif (!pergunta) return [];\n\nreturn [{\n  json: {\n    pergunta,\n    channel_id: body.channel_id ?? '',\n    autor: body.autor ?? 'usuário'\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [448, 384],
+      "id": "38a9cac7-18be-4a25-9ed1-89e3b64d9aa7",
+      "name": "js valida"
+    },
+    {
+      "parameters": {
+        "jsCode": "const fs = require('fs');\nconst d = $input.first().json;\n\nconst memoriaPath = 'D:\\\\projetos\\\\Rep\\\\JARVIS\\\\JARVIS_BRAIN\\\\memoria\\\\jarvis_memoria.json';\n\nlet historico = [];\ntry {\n  historico = JSON.parse(fs.readFileSync(memoriaPath, 'utf-8'));\n  if (!Array.isArray(historico)) historico = [];\n} catch(e) {\n  historico = [];\n}\n\nconst contexto = historico.slice(0, 3).map((entry, i) => {\n  return `[Dia ${i+1} — ${entry.date}]\\nResumo: ${(entry.resumo ?? []).join('; ')}\\nAtenção: ${(entry.atencao ?? []).join('; ')}\\nRecomendações: ${(entry.recomendacoes ?? []).join('; ')}`;\n}).join('\\n\\n') || 'Nenhuma análise registrada ainda.';\n\n// Passa TODOS os campos adiante incluindo channel_id e autor\nreturn [{\n  json: {\n    pergunta: d.pergunta,\n    channel_id: d.channel_id,\n    autor: d.autor,\n    contexto_memoria: contexto,\n    dias_disponiveis: historico.length\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [672, 384],
+      "id": "45029340-dd17-44ee-bdda-22008e692b6b",
+      "name": "js memoria"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:1234/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"qwen2.5-coder-7b-instruct\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Você é o JARVIS, assistente pessoal de análise de dados. Responda de forma direta e objetiva, em português. Limite suas respostas a no máximo 5 frases. Use os dados de contexto fornecidos para embasar suas respostas.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify(\"Contexto das últimas análises:\\n\" + $json.contexto_memoria + \"\\n\\nPergunta do usuário (\" + $json.autor + \"): \" + $json.pergunta) }}\n    }\n  ],\n  \"temperature\": 0.4,\n  \"max_tokens\": 500,\n  \"stream\": false\n}",
+        "options": { "timeout": 60000 }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [896, 384],
+      "id": "9c95a313-59db-4988-8ca5-5dddb240680e",
+      "name": "LM Studio Chat"
+    },
+    {
+      "parameters": {
+        "jsCode": "// O HTTP Request passa o JSON da resposta do LM Studio\n// mas perde os campos anteriores — precisamos recuperar do node js memoria\nconst lmResponse = $input.first().json;\nconst memoriaCtx = $('js memoria').first().json;\n\nconst texto = lmResponse?.choices?.[0]?.message?.content;\n\nif (!texto) {\n  // Debug: mostra o que veio do LM Studio\n  return [{\n    json: {\n      channel_id: memoriaCtx.channel_id,\n      resposta: `**JARVIS:** Erro interno. Resposta do modelo: ${JSON.stringify(lmResponse).substring(0, 200)}`\n    }\n  }];\n}\n\nreturn [{\n  json: {\n    channel_id: memoriaCtx.channel_id,\n    resposta: `**JARVIS:** ${texto}`\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 384],
+      "id": "df54e870-cf46-46ef-8457-ddc4cd701412",
+      "name": "js formata"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ resposta: $json.resposta }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1344, 384],
+      "id": "11361768-4db2-4dc0-bf3d-922719732e4f",
+      "name": "Responde Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook Chat": {
+      "main": [[{ "node": "js valida", "type": "main", "index": 0 }]]
+    },
+    "js valida": {
+      "main": [[{ "node": "js memoria", "type": "main", "index": 0 }]]
+    },
+    "js memoria": {
+      "main": [[{ "node": "LM Studio Chat", "type": "main", "index": 0 }]]
+    },
+    "LM Studio Chat": {
+      "main": [[{ "node": "js formata", "type": "main", "index": 0 }]]
+    },
+    "js formata": {
+      "main": [[{ "node": "Responde Webhook", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "1fabd830-38e8-4454-afda-d18a022bd845",
+  "meta": {
+    "instanceId": "8e5aeb01f325f2649965b01f71bf0b166cebd1b92418275ae5a39999e5d13610"
+  },
+  "id": "yT2rGHOuoziYqV7V",
+  "tags": []
+}
