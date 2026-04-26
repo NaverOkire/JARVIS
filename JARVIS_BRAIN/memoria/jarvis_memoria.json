@@ -1,0 +1,86 @@
+[
+  {
+    "date": "2026-04-26",
+    "resumo": [],
+    "atencao": [
+      "Os dados fornecidos estão incompletos e não contêm informações valiosas para análise."
+    ],
+    "recomendacoes": [
+      "Forneça mais detalhes ou dados completos para que eu possa realizar uma análise adequada."
+    ],
+    "tokens_used": 291,
+    "run_at": "2026-04-26T16:32:40.232Z"
+  },
+  {
+    "date": "2026-04-26",
+    "resumo": [],
+    "atencao": [
+      "Dados incompletos"
+    ],
+    "recomendacoes": [
+      "Forneça mais informações para análise"
+    ],
+    "tokens_used": 261,
+    "run_at": "2026-04-26T16:31:38.760Z"
+  },
+  {
+    "date": "2026-04-26",
+    "resumo": [],
+    "atencao": [
+      "Os dados fornecidos estão incompletos e não contêm informações valiosas para análise."
+    ],
+    "recomendacoes": [
+      "Forneça mais detalhes ou dados completos para que eu possa realizar uma análise adequada."
+    ],
+    "tokens_used": 291,
+    "run_at": "2026-04-26T16:30:40.606Z"
+  },
+  {
+    "date": "2026-04-26",
+    "resumo": [],
+    "atencao": [
+      "Dados incompletos"
+    ],
+    "recomendacoes": [
+      "Forneça mais informações para análise"
+    ],
+    "tokens_used": 261,
+    "run_at": "2026-04-26T16:29:39.886Z"
+  },
+  {
+    "date": "2026-04-26",
+    "resumo": [],
+    "atencao": [
+      "Dados incompletos"
+    ],
+    "recomendacoes": [
+      "Forneça mais informações para análise"
+    ],
+    "tokens_used": 257,
+    "run_at": "2026-04-26T16:28:38.714Z"
+  },
+  {
+    "date": "2026-04-26",
+    "resumo": [],
+    "atencao": [
+      "Os dados fornecidos estão incompletos e não contêm informações valiosas para análise."
+    ],
+    "recomendacoes": [
+      "Forneça mais detalhes ou dados completos para uma análise adequada."
+    ],
+    "tokens_used": 286,
+    "run_at": "2026-04-26T16:27:40.078Z"
+  },
+  {
+    "date": "2026-04-26",
+    "resumo": [],
+    "atencao": [
+      "Dados incompletos"
+    ],
+    "recomendacoes": [
+      "Forneça mais informações para análise"
+    ],
+    "tokens_used": 261,
+    "run_at": "2026-04-26T16:26:39.217Z"
+  }
+]
