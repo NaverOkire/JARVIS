@@ -53,18 +53,3 @@ O ecossistema é integrado por quatro componentes principais que trabalham em si
 ## 📄 Licença
 Este projeto é de código aberto sob a licença MIT. Sinta-se à vontade para contribuir com melhorias durante esta fase de maturação.
 ---
-
-### 🚀 Como Funciona
-O n8n recebe a entrada do usuário.
-
-O sistema realiza uma busca no Obsidian para encontrar informações relevantes sobre o tema solicitado.
-
-O contexto recuperado é injetado em um prompt otimizado.
-
-O LM Studio processa o prompt usando o modelo local e gera uma resposta baseada nos dados reais fornecidos, e não apenas em seu treinamento prévio.
-
----
-
-
-## 📄 Licença
-Este projeto é de código aberto sob a licença MIT. Sinta-se à vontade para contribuir com melhorias durante esta fase de testes.
